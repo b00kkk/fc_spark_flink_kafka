@@ -42,3 +42,57 @@
   - New project 선택
   - virtualenv를 사용해 가상 환경 설정
   - 터미널에서 pip install pyspark를 입력해 pyspark 라이브러리 설치
+
+## 스파크 애플리케이션의 구성 요소
+1. 클러스터 매니저
+- 주요 역할 : 스파크 애플리케이션의 실행을 관장하고 모니터링
+- 종류 : Standalone, Apache Mesos, Hadoop Yarn, Kubernetes
+2. 드라이버
+- 주요 역할 : 스파크 애플리케이션의 실행을 관장하고 모니터링
+- 1개의 애플리케이션에는 1개의 드라이버만 존재
+- 스파크에는 두 가지 모드가 있음
+  - 클러스터 모드 : 드라이버가 장비 내의 존재하는 경우
+  - 클라이언트 모드 : 드라이버가 클러스터 외부에 존재
+3. 실행기(Executor)
+- 주요 역할 : 스파크 드라이버가 요청한 태스크들을 받아서 실행하고 그 결과를 드라이버로 반환
+- 각 프로세스는 드라이버가 요청한 여러 태스크 슬롯에서 병렬로 실행
+4. 스파크 세션
+- 주요 역할 : 스파크 코어 기능들과 상호 작용할 수 있는 진입점 제공, 그 API로 사용할 수 있게 해주는 존재
+- 스파크 애플리케이션 코드를 사용할 때는 사용자가 직접 객체를 생성해야함
+5. 잡
+- 액션 연산(save, collect 등)에 대한 응답으로 생성되는 여러 태스크로 이루어진 병렬 연산
+- 잡은 여러개의 stage로 나누어짐
+6. 스테이지
+- 스테이지 안에는 여러 개의 태스크가 존재함
+7. 태스크
+- 실행기에서 실행되는 기본 단위를 말함
+- 한 개의 태스크가 기본적으로는 한 개의 파티션을 가지고 연산을 실행함
+
+## Transformation, Action, Lazy evalution 의 개념
+스파크 연산은 Transformation과 Action으로 구별됨
+1. Transformation
+- 불변인 원본 데이터를 수정하지 않고, 하나의 RDD나 Dataframe을 새로운 RDD나 Dataframe으로 변형
+- Narrow, Wide 두 가지가 존재함
+  - Narrow transformation
+      - input은 1개의 파티션, output도 1개의 파티션
+      - 파티션 간의 데이터 교환이 발생하지 않음
+      - ex) filter(), map(), coalesce()
+  - Wide transformation
+      - 연산 시 파티션끼리 데이터 교환 발생
+      - ex) groupby(), orderby(), sortByKey(), reduceByKey()
+      - 단 join은 부모가 어떻게 파티션 되어 있냐에 따라 narrow와 wide로 구분됨
+   
+2. Action
+- 불변인 인풋에 대해 부수효과를 포함하고, 아웃풋이 RDD 혹은 DataFrame이 아닌 연산
+- ex)
+  - count() : 아웃풋이 int
+  - collect() : 아웃풋이 array
+  - save() : 아웃풋이 void
+ 
+3. Lazy evaluation
+- 스파크에서 모든 transformation은 즉시 계산이 아닌 lineage라 불리는 형태로 기록
+- transformation은 action이 실행될 때 계산됨
+- 장점
+  - 스파크가 연산 쿼리를 분석하고, 어디를 최적화할지 실행계획을 최적화 가능
+  - 장애에대한 데티어 내구성을 제공
+    - 장애가 발생했을 때, 기록된 lineage를 재실행해 원래 상태를 재생성할 수 있음
