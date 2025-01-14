@@ -25,3 +25,20 @@
 -  스파크는 빠른 병렬 연산에 초점을 둠
 -  수많은 데이터 소스(하둡, Hbase, mongo DB, hive, RDBMS, AWS 등)로부터 데이터를 읽어 들일 수 있음
 -  여러 파일 포맷과 교환 가능
+
+## 로컬 환경에 스파크 설치
+1. 로컬 스파크 구축
+- java 설치
+  - 터미널 실행
+  - java -version 으로 자바가 설치 되어있는지 확인
+  - 자바가 설치되어있지 않다면 sudo apt-get instal openjdk-11-jdk 입력
+  - java -version 으로 제대로 설치 되었는지 다시 확인
+- PyCharm 설치
+   - [Pycharm 다운로드 링크](https://www.jetbrains.com/pycharm/download/?section=linux#section=linux)
+   - snap find pycharm 
+   - sudo snap install pycharm--community --classic
+   - 파이참이 잘 설치되었는지 학인하기
+- Python 가상 환경 구성 및 pyspark 라이브러리 설치
+  - New project 선택
+  - virtualenv를 사용해 가상 환경 설정
+  - 터미널에서 pip install pyspark를 입력해 pyspark 라이브러리 설치
