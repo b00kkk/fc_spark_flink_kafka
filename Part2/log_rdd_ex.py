@@ -128,4 +128,4 @@ if __name__ == '__main__':
     # Storage는 현재 나오지 않지만, Spark의 중간 결과를 캐싱하는 경우 나타남
     # Environment는 Spark의 Config들이 나타남
     # Executors에서는 각각의 로그를 확인해 볼 수 있음
-    # SparkSQL을 사용하면 UI에서 SQL탭을 확인할 수 있
+    # SparkSQL을 사용하면 UI에서 SQL탭을 확인할 수 있음
