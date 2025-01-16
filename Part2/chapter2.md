@@ -9,4 +9,5 @@ RDD : 스파크의 기본 추상화 객체
 - 연산 함수
   - Partition을 반복자 형태(Iterator)로 변환하는 함수를 내장하고 있음
 ## RDD 실습
-[로그 집계 파이프라인 만들기](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/join_rdd_ex.py)
+[로그 집계 파이프라인 만들기 - 원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/join_rdd_ex.py)
+[내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Part2/log_rdd_ex.py)
