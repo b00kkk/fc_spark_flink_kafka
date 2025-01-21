@@ -86,6 +86,8 @@ RDD : 스파크의 기본 추상화 객체
 
 ## Dataframe API 실습(로그 집계 파이프라인 만들기)
 [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/log_dataframe_ex.py)
+[내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/log_dataframe_ex.py)
 
 ## SQL API 실습(로그 집계 파이프라인 만들기)
 [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/log_sql_ex.py)
+[내가 정리한 코드[(https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/log_sql_ex.py)
