@@ -10,8 +10,8 @@ RDD : 스파크의 기본 추상화 객체
   - Partition을 반복자 형태(Iterator)로 변환하는 함수를 내장하고 있음
 
 ## RDD 실습(로그 집계 파이프 라인 만들기)
-[원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/join_rdd_ex.py)
-[내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Part2/log_rdd_ex.py)
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/join_rdd_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Part2/log_rdd_ex.py)
 
 ## SparkSQL, Dataframe, Dataset
 1. RDD API의 문제점
@@ -85,9 +85,9 @@ RDD : 스파크의 기본 추상화 객체
   - SQL 형태로 사용하면 모두 런타임 시점에 잡을 수 있음
 
 ## Dataframe API 실습(로그 집계 파이프라인 만들기)
-[원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/log_dataframe_ex.py)
-[내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/log_dataframe_ex.py)
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/log_dataframe_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/log_dataframe_ex.py)
 
 ## SQL API 실습(로그 집계 파이프라인 만들기)
-[원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/log_sql_ex.py)
-[내가 정리한 코드[(https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/log_sql_ex.py)
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/log_sql_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/log_sql_ex.py)
