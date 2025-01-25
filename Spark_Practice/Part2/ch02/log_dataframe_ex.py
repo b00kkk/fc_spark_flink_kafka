@@ -81,7 +81,7 @@ if __name__ == "__main__":
     # c-2) 분 단위의, 중복을 제거한 ip 리스트, 개수 뽑기
     group_cols = ["hour", "minute"]
     df.withColumn(
-        "hour", hour(date_trunc("hour", col("timestamp"))),
+        "hour", hour(date_trunc("hour", col("timestamp")))
     ).withColumn(
         "minute", minute(date_trunc("minute", col("timestamp")))
     ).groupby(group_cols).agg(
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     # http://localhost:4040/jobs/ 접속
     # Stages 접속해 확인해보면 RDD로 출력되는 걸 볼 수 있음
-    # Environment 도 RDD로 학인이 됨
+    # Environment 도 RDD로 확인이 됨
     # SQL/DataFrame은  SparkSQL을 사용했기에 나오는데 Plan을 확인할 수 있음
     # Exchange가 셔플이 발생했다는 의미
     # Details에서 extended를 볼 수 있음
