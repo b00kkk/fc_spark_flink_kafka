@@ -11,21 +11,22 @@ RDD : 스파크의 기본 추상화 객체
 
 ## RDD 실습(로그 집계 파이프 라인 만들기)
 - [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/join_rdd_ex.py)
-- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Part2/log_rdd_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch02/log_rdd_ex.py)
 
 ## SparkSQL, Dataframe, Dataset
 1. RDD API의 문제점
 - 스파크가 RDD API 기반의 연산, 표현식을 검사하지 못해 최적화할 방법이 없음
   - RDD 기반 코드에서 어떤 일이 일어나는지 알 수 없음
-  - Join, filter, groub by 등 여러 연산을 하더라도 람다 표현식으로 밖에 보지 못함
+  - join, filter, groub by 등 여러 연산을 하더라도 람다 표현식으로 밖에 보지 못함
   - 특히 PySpark의 경우, 연산함수 Iterater[T] 데이터 타입을 제대로 인식하지 못함
+    - Iterater[T]란 데이터의 형식을 지정해주는 것을 말함
 - 스파크는 어떠한 데이터 압축 테크닉도 적용하지 못함
   - 타입 T에 대한 정보를 전혀 얻을 수 없음
   - 그 타입의 객체 안에서 어떤 타입의 컬럼에 접근한다 해도, 스파크는 알 수 없음
   - 바이트 뭉치로 직렬화해서 사용할 수 밖에 없음
   > -> 스파크가 연산 순서를 재정렬해 효과적인 질의 계획으로 바꿀 수 없음
 2. SparkSQL
-- 구조호된 데이터를 처리하기 위한 스파크 모듈
+- 구조화된 데이터를 처리하기 위한 스파크 모듈
 - DataFrame, Dataset이라 불리는 높은 차원의 추상화를 제공하고, 분산 SQL 쿼리 엔진의 역할도 수행
 - RDD의 문제점을 모두 해결할 수 있음
 - SQL 질의 수행
@@ -54,9 +55,9 @@ RDD : 스파크의 기본 추상화 객체
 - 사람이 보는 형태로는 표의 형태를 보임
 - 데이터 타입
   - 기본 타임
-  > Byte, Short, Integer, Long, Float, Double, String, Boolean, Decimal
+    > Byte, Short, Integer, Long, Float, Double, String, Boolean, Decimal
   - 정형화 타입
-  > Binary, Timestamp, Date, Array, Map, Struct, StructField
+    > Binary, Timestamp, Date, Array, Map, Struct, StructField
   - 실제 데이터를 위한 스키마를 정의할 때 타입들이 어떻게 연계되는지를 아는 것지 중요
 - 스키마
   - Dataframe을 위해 컬럼 이름과 연관된 데이터 타입을 정의한 것
@@ -73,7 +74,7 @@ RDD : 스파크의 기본 추상화 객체
 4. Dataset API
 - 원래는 분리가 되어있었는데 스파크 2.0에서 개발자들이 한 종류만 알면 되도록 Dataframe API, Dataset API를 하나로 합침
 - Dataset은 정적 타입과 동적 타입을 모두 가짐
-- 그렇기에 Java와 Scala에서만 사용 가능, Python과 R은 DataFrame만 사용 가
+- 그렇기에 Java와 Scala에서만 사용 가능, Python과 R은 DataFrame만 사용 가능
   - Java와 Scala는 타입 안전을 보장, Python과 R은 타입 안전을 보장하지 않음
 - Scala에서는 case class, Java에서는 JavaBean 클래스를 사용해 Dataset이 쓸 스키마를 지정할 수 있음
 - 트랜스포메이션, 액션 연산들도 사용 가능
@@ -86,8 +87,8 @@ RDD : 스파크의 기본 추상화 객체
 
 ## Dataframe API 실습(로그 집계 파이프라인 만들기)
 - [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/log_dataframe_ex.py)
-- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/log_dataframe_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch02/log_dataframe_ex.py)
 
 ## SQL API 실습(로그 집계 파이프라인 만들기)
 - [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch02_batch/log_sql_ex.py)
-- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/log_sql_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch02/log_sql_ex.py)

@@ -4,12 +4,12 @@ from pyspark import SparkContext, RDD
 from pyspark.sql import SparkSession
 
 if __name__ == '__main__':
-    ss : SparkSession = SparkSession.builder\
-        .master("local")\
+    ss : SparkSession = SparkSession.builder\ # 스파크 애플리케이션의 시작점
+        .master("local")\ #local 모드에서 실행
         .appName("rdd examples ver")\
         .getOrCreate()
 
-    sc: SparkContext = ss.sparkContext
+    sc: SparkContext = ss.sparkContext #RDD 기반 작업을 위해 사
 
     log_rdd: RDD[str] = sc.textFile("data/log.txt")
 
@@ -61,7 +61,8 @@ if __name__ == '__main__':
         log = row[2].replace("\"", "")
         api_method = log.split(" ")[0]
         return api_method, 1
-
+        
+    # reduceByKey() : 집계함수
     rdd_count_by_api_method = parsed_log_rdd.map(extract_api_method)\
         .reduceByKey(lambda c1, c2: c1 + c2).sortByKey()
 
@@ -74,7 +75,7 @@ if __name__ == '__main__':
         date_format = "%d/%b/%Y:%H:%M:%S"
         date_time_obj = datetime.strptime(timestamp, date_format)
         return f"{date_time_obj.hour}:{date_time_obj.minute}",1
-
+        
     rdd_count_by_hour_and_minute = parsed_log_rdd.map(extract_hour_and_minute)\
         .reduceByKey(lambda c1, c2: c1 + c2)\
         .sortByKey()
@@ -114,11 +115,11 @@ if __name__ == '__main__':
 
     # localhost:4040/jobs/를 들어가 Spark UI 확인
     # Jobs는 action 연산에 의해 구분이 됨
-    # action이 collct 하나만 있기에 현재 action도 1개
-    # 위치를 보면 107번 째 줄에 action이 있다는 것을 확인할 수 있음
+    # action이 collect 하나만 있기에 현재 action도 1개
+    # 위치를 보면 108번 째 줄에 action이 있다는 것을 확인할 수 있음
     # 들어가 보면 두 개의 stage로 나누어져 있는 것을 확인할 수 있음
     # 첫 번째 stage는 File을 읽어오는 부분, 두 번째 stage에서 데이터 교환이 발생함
-    # 첫 번째와 두 번째를 가르는 부분이 104번 쨰 줄이라는 것을 확인할 수 있음
+    # 첫 번째와 두 번째를 가르는 부분이 103번 줄이라는 것을 확인할 수 있음
     # reduceByKey가 narrow transformation이 아닌 wide transformation임
     # 여기서 실행기(executor)간에 데이터 교환이 발생함
     # 이것을 "셔플"이라고 부름
