@@ -35,3 +35,73 @@ Stram Processing은 끝없이 들어오는 데이터의 흐름을 연속적, 준
         - append 모드 : 지난 트리거 이후로 결과 테이블에 새로 추가된 행만 외부 저장소에 기록
         - update 모드 : 지난 트리거 이후에 결과 테이블에 갱신된 행들만 외부 저장소에 기록
         - complete 모드 : 갱신된 전체 테이블을 외부 저장소에 기록
+
+## Structured Streaming 실습 
+### 실시간 로그 집계 파이프라인 만들기
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch03_streaming/streaming_dataframes_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch03/streaming_dataframe_ex.py)
+
+### Join
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch03_streaming/streaming_dataframes_join_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch03/streaming_dataframe_join_ex.py)
+
+## Dstream 실습 
+### read, write
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch03_streaming/dstream_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch03/dstream_ex.py)
+
+### transforamtions
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch03_streaming/dstream_transformations_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch03/dstream_transformation_ex.py)
+
+## Event Time windows, Processing Time windows
+### window function
+- 데이터의 특정한 범이를 설정하고, 그 범위 내에서 집계 함수 등을 적용
+- spark streaming에서는 time-based window만을 사용(다른 기반의 window 사용시 에러 발생)
+- window duration : window의 크기
+- window sliding interval : window의 간의 간격
+- 크게 세 가지 방식의 window가 존재
+    - sliding window
+        - 각 window의 크기는 고정
+        - window 간의 겹치는 구간 존재
+        - duration과 interval의 크기가 달라 겹치는 구간이 발생
+    - tumbling window
+        - 고정 크기의 window
+        - 겹치는 window가 없음
+        - interval과 duration이 같음
+    - session window
+        - 동적으로 달라짐
+        - 처음 window가 만들어진 후, record/event가 설정한 gap duration내에 들어는 한 확장
+        - gap duration내에 event/record가 들어오지 않는다면 window가 끝나고, 새로운 window를 생성
+### Event time windows
+- event time을 기준으로 input record를 처리
+> event time: record/event가 실제로 생성된 시점(spark streaming application에 들어온 시간과는 다름)
+- 일반적으로 event time은 input record의 column으로 제공됨
+- Dstream에서는 event time을 기준으로 작업하는데 한계가 있음
+- Structured streaming 에서는 window function을 제공함
+### Processing time windows
+- Processing time을 기준으로 input record를 처리
+> Processing time : spark streaming application에 들어온 시간
+- 일반적으로 processing time은 spark에서 처ㄹ하는 시간이라 input record에는 포함되어 있지 않음
+- current_timestamp 메서드를 통해 생성
+### event + window
+- output mode = COMPLETE
+    - 이전에 쓰여 있던 테이블의 결과를 모두 가져옴
+- output mode = UPDATE
+    - 업데이트가 된 window에 대해서만 사용함
+- output mode = APPEND
+    - 추가된 이벤트에 대해서만 테이블로 사용됨
+
+## Event TIme windows, Processing Time windows 실습
+### Event Time windows
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch03_streaming/event_time_windows_ex.py)
+- [내가 정리한 코드]()
+### Processing Time windows
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch03_streaming/processing_time_windows_ex.py)
+- [내가 정리한 코드]()
+
+## Watermark
+- 처리된 데이터에서 쿼리에 의해 검색된 event time의 최댓값보다 뒤쳐지는 동적인 임계값
+- 이 임계값 이전에 event time을 가지는 event는 쿼리 집계 대상에서 제외됨
+- 이 Watermark를 사용하면, spark 쿼리의 결과를 계산하고 유지해야하는 상태 정보의 양을 줄일 수 있음
+    - 일부 데이터를 포함하지 않기 때문
