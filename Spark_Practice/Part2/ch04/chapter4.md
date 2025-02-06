@@ -69,3 +69,64 @@
 
 ## Spark - action, stage, shuffle, task, slot 확인 실습
 [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/spark_jobs_ex.py)
+
+## JOIN의 종류
+
+- Join
+    - RDD나 Dataframe의 형태로 되어 있는 두 데이터를 공통적으로 일치하는 키를 기준으로 병합하는 연산
+    - Join 연산들은 Executor 사이의 방대한 데이터 이동이 발생할 수 있음
+    - 그렇기에 데이터 이동(셔플)을 최소화하는 것이 Spark 성능의 핵심 요소
+- Join의 종류
+    - Broadcast Hash Join (BJH)
+        - map-side only join 이라고도 함
+        - 큰 데이터셋과, 작은 데이터셋을 join 할 때 사용
+        - Broadcat 변수를 이용해서 더 작은 쪽의 데이터는 Spark Driver에 의해 모든 Executor에 복사가 됨
+        - 각각의 Executor에 나뉘어 있는 나뉘어 있는 큰 데이터 파티션과 각각 join의 연산이 수행됨
+        - 데이터 교환, 즉 Shuffle이 거의 발생하지 않아 효율적
+        - 작은 데이터가 너무 크면 문제가 발생할 수도 있음
+        - 관련 파라미터
+            - spark.sql.autoBroadcastJoinThreshold (default:10MB)
+            - 데이터 셋의 크기가 이 파라미터에서 정의한 Threshold 이하라면 자동으로 BHJ를 수행
+    - Sort Merge Join (SMH)
+        - 정렬 가능하고 겹치지 않으면서, 공통의 파티션에 저장이 가능한 공통의 키를 기반으로 큰 두 종류의 데이터셋을 합칠 수 있는 방법
+        - 두 데이터가 모두 클 때 사용하는 Join
+        - 해시 가능한 공통 키를 가지면서, 공통 파티션에 존재하는 두 가지의 데이터셋을 사용
+            - 두 개의 데이터셋에 Join하려는 동일 키를 가진 데이터셋의 모든 row가 동일 executor의 동일 파티션에 존재하도록 Shuffle 작업이 필요
+            - 데이터 저장 방식, 파티셔닝 방법 등에 따라 생략될 수 있음
+        - Sort, Merge 두 단계 
+            - Sort
+              - 각 데이터 셋을 join 연산에 사용한 키를 기준으로 정렬
+            - Merge
+              - 각 데이터 셋에서 키 순서대로 데이터를 순회하며, 키가 일치하는 Row끼리 병합
+        - 관련 파라미터
+          - spark.sql.join.preferSortMergeJoin
+    - Shuffle Hash Join (SHJ)
+    - Broadcast Nested Loop Join (BNLJ)
+    - Catersian Product Join
+    - 일반적으로 가장 효율 적인 Join은 BJH와 SMH 임
+
+### Broadcast Hash Join (BHJ) 실습
+[원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/join_broadcast_hash_join_ex.py)
+
+### Sort Merge Join (SMH) 실습
+[원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/join_sort_merge_join_ex.py)
+
+## 스파크에서의 메모리 할당
+- Driver 메모리 할당
+  - 관련 파라미터
+    1. JVM memory(spark.driver.memory) - default = 1GB
+    2. Overhead(spark.driver.memoryOverhead) - default = 0.1 (10% or 384MB)
+    - Overhead란, JVM head이 아닌 공간으로 JVM이 아닌 프로세스를 처리하는데 사용됨
+- Executor 메모리 할당
+    - 관련 파라미터
+      1. Heap Memory(spark.executor.memory)
+      2. Overhead Memory(spark.executor.memoryOverhead)
+        - Non-JVM 프로세스들이 처리되는 공간
+        - ex) 셔플 데이터 교
+      3. Offheap Memory(spark.memory.offHeap.size)
+      4. Pyspark Memory(spark.executor.pyspark.memory)
+        - Scala나 Java를 사용하는 경우 고려할 필요강 없음
+        - Pyspark를 사용할 때, 파라미터를 따로 지정하지 않으면 파이썬의 메모리를 얼마나 쓰는지 제한하지 않음
+        - 파이썬외의 다른 non-JVM 프로세스와 공유하는 오베헤드 메모리 공간을 초과하지 않도록 하는 것이 spark application의 역할
+    - Offheap, PysparkMemory가 양수 값으로 세팅이 된다면 Overhead 영역에 포함됨
+  
