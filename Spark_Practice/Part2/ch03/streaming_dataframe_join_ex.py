@@ -7,6 +7,7 @@ if __name__ == '__main__':
         .appName("streaming dataframe join example")\
         .getOrCreate()
 
+    # inferSchema를 통해 컬럼의 데이터타입을 자동으로 지정함
     authors = ss.read\
         .option("inferSchema", True).json("data/authors.json")
 
@@ -33,7 +34,7 @@ if __name__ == '__main__':
                         "book.name as name",
                         "book.year as year")
 
-        # 잘 가져와 졌는지 확
+        # 잘 가져와 졌는지 확인
         # streamed_books.writeStream\
         #     .format("console")\
         #     .outputMode("append")\
@@ -56,7 +57,7 @@ if __name__ == '__main__':
         # join 연산은 마이크로 배치가 만들어질 때 마다 사용됨
 
 
-#join_stream_with_static()
+# join_stream_with_static()
 
 # 3. join (stream, stream)
 def join_stream_with_stream():
