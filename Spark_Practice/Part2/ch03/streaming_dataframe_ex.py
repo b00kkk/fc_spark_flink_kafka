@@ -42,6 +42,7 @@ if __name__ == '__main__':
 
         cols = ["ip", "timestamp", "method", "endpoint", "status_code", "latency"]
 
+        # col[i]: 컬럼명, F.split으로 나눈 후 getItem으로 인덱스 값을 가져옴옴
         df = lines.withColumn(cols[0], F.split(lines['value'], ",").getItem(0)) \
             .withColumn(cols[1], F.split(lines['value'], ",").getItem(1)) \
             .withColumn(cols[2], F.split(lines['value'], ",").getItem(2))\
@@ -62,7 +63,7 @@ if __name__ == '__main__':
         # append output mode 는 watermark 없이 사용이 안됨
         # stream data가 무한한 데이터가 들어오는 전제
         # 특정한 시점에 대한 제약조건이 없다면 무한한 데이터를 집계해야할 수도 있음
-        # 그래서 groupby는 watermark를 배운 후에 실
+        # 그래서 groupby는 watermark를 배운 후에 실행
 
 
         df.writeStream \
@@ -89,4 +90,3 @@ if __name__ == '__main__':
 
     # read_from_socket()
     read_from_files()
-
