@@ -263,3 +263,66 @@
     - 병렬 처리 애플리케이션에서 data skew는 큰 성능 저하의 원인이 될 수 있음
       - 크기가 작은 partition들의 연산이 아무리 빨리 수행되었을더라도, skew된 partition에서의 연산이 끝나지 않으면 다음 stage로 넘어갈 수 없음
     - file 형태로 데이터를 쓸 때도, File 간  skew 문제가 발생할 수 있음
+
+## Repartition, Calesce에 대한 이해
+- Repartition
+  - Wide dependency transformation -> Shuffle 동반
+  - RDD
+    - repartiton(numPartitions)
+  - DataFrame
+    - repartition(numPartitions, *cols)
+      - Hash 기반의 partitioning
+    - repartitionByRange(numPartitons,*cols)
+      - 값들의 범위를 기반으로 하는 partitioning
+      - partitioning의 범위를 정하기 위해, 데이터 샘플링 작업을 수행
+      - 아웃풋이 항상 똑같지 않을 수 있음
+  - output partiton 개수
+    - 기본적으로 파라미터로 넘겨준numPartitons
+    - 만약 numPartitons를 넘기지 않았다면, spark.sql.shuffle.partitions 값을 사용
+      - default = 200
+  - Repartition은 Shuffle을 동반하기 때문에 함부로 사용하면 안됨
+    - 사용 전, 후 성능이 어떻게 변하는지 모니터링
+    - 사용하면 좋은 경우
+      - DataFrame reuse and repeated column filters
+        - 이 때는 filter로 사용되는 column에 대해 DF를 repartition 해놓으면 좋음
+      - DataFrame/RDD의  partition이  skewd 되어 있을 때
+        - size가 큰 일부 partition 떄문에 전체 stage를 처리하는 시간이 증가
+      - DataFrame/RDD의 partiton 개수가 너무 작을 때
+        - 각 partition 크기가 너무 크면 spark의 병렬성을 제대로 활용하지 못함
+    - Partiton의 개수를 줄이는 목적으로 사용하는 것은 일반적으로 좋지 않음
+      - 줄일 때는 Repartition이 아닌 Calesce를 사용하는 것이 좋음
+- Coalesce
+  - Narrow dependency transformation -> Shuffle 발생하지 않음
+  - RDD
+    - coalesce(numPartitons)
+  - DataFrame
+    - coalesce(numPartitons)
+  - Coalesce는 shuffle/sort가 발생하지 않기 때문에 partition isze를 줄이는데는 일반적으로 repartition보다 좋음
+  - lacla(같은  Executor)내의 partition들을 결합하기만 함
+  - Coalesce는 partition의 개수를 증가시키지 않음
+  - Coalesce는 skewed partition을 생성할 수 있음
+  - Narrow transformation이기 때문에, coalesce()가 속한  stage내에서, 병렬성을 안좋게 할 수 있음
+  - coalesce를 하지 않았다면, where,sleect transformation이 repartiiton의  task를 수행했을 것임
+
+## Caching, Persisitence에 대한 이해
+- 동일한 RDD나, Dataframe의 transformation 연산을 중복으로 하지 않기 위해 사용
+  - transformation 연산이 lazy evaluation, 즉 action이 실행될 때 실제로 transformation 연산이 수행된다는 것을 인지해야함
+- cache()는 내줍적으로 Persistence를 호출
+  - 메모리에만 데이터를 캐싱
+- persisit()는 다양한 StorageLevel에 데이터를 캐싱할 수 있음
+  - MEMORY_ONLY
+  - DISK_ONLY(MEMORY_ONLY 대비 더 큰 사이즈의 데이터 캐싱 가능, 속도가 느림)
+  - MEMORY_ONLY_2(캐싱을 두 번 함, 더 안전함)
+  - OFF_HEAP
+- Caching 유무 비교
+  - 캐싱을 하는 데에도 리소스가 필요하기 때문에, 처음에는 오래걸림
+  - 다음 스테이션에서부터는 캐싱 적용시 더 빨라짐
+- 캐싱된 RDD, Dataframe의 경우 UI에서 초록색으로 표시됨
+- Caching, Persistence를 사용
+  - 좋은 경우
+    - 큰 RDD, DataFrame에 반복적으로 접근해야 되는 경우
+      - 머신러닝 학습 등
+  - 사용하면 안되는 경우
+    - DataFrame이 메모리에 들어가기는 너무 큰 경우
+    - 크기에 상관없이, 자주 쓰지 않는 dataFrame에 대해 비용이 크지 않은 transformation 수행
+  - 메모리에만 cahce()의 경우, 직렬화, 비직렬화 과정이 동반되기 때문에 주
