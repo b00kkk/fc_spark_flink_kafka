@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # aggregate_traffic_counts_by_tumbling_window()
 
     """
-    매 시간 마다, traffic 이 가장 만은 도메인을 출력
+    매 시간 마다, traffic 이 가장 많은 도메인을 출력
     """
 
     def read_traffics_from_file():
