@@ -106,5 +106,5 @@ Stream Processing은 끝없이 들어오는 데이터의 흐름을 연속적, �
 - 이 Watermark를 사용하면, spark 쿼리의 결과를 계산하고 유지해야하는 상태 정보의 양을 줄일 수 있음
     - 일부 데이터를 포함하지 않기 때문
 ### Watermark 실습
-[원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch03_streaming/watermarks_ex.py)
-[내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch03/watermark_ex.py)
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch03_streaming/watermarks_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch03/watermark_ex.py)
