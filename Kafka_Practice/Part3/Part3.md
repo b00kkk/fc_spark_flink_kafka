@@ -112,3 +112,76 @@
 - Consumer는 bytes 형태의 데이터르 String, int 등의 Object 형태로 변환(Deserialization: 역직렬화)
 - Producer에서는 Serialization 방법과, Consumr에서의 Deserialization 방법은 반드시 같은 방식이어야함
 - 데이터 타입을 바꾸고 싶다면, Partition내의 데이터는 불변이므로 새로운 topic을 생성해야함
+### Consumer group, Consumer offsets
+1. Consumer group
+- 효율적인 분산 처리를 위해 도입
+- consumer 들은 consumer group에 묶임
+- group 내의 consumer들은 한 Topic내의 각기 다른 partition들을 읽음
+- Consumer group내 Consumer가 너무 많은 경우
+  - Partition 개수보다 Consumer group 내 Consumer개수가 많으면, ㅇ리부 Consumer는 비활성화 될 수 있음
+- 한 개의 topic을 여러 Consumer group이 구독 가능
+2. Consumer offset
+- Kafka는 consumer group이 어느 partiition까지 읽었는지에 대한  offset정보를 저장
+- offset 정보는 _consumer_offsets이라는 topic에 저자됨
+- Offset이 커밋되는 방식
+  - At least once(실무에서 가장 많이 사용)
+    - 적어도 1회 전달, 메시지가 중복될 수 있지만 상실되지는 않음
+    - 재전송 시도는 존재, 중복 삭제는 안될 수 있음
+    - idempotent 이어야함(중복된 메시지를 처리하는 것이 시스템에 어떤 영향을 미치면 안됨->항상 같은 결과)
+  - At most once
+    - 1회는 전달을 시도해봄, 메시지는 중복되지 않지만 상실될 수 있음
+    - 재전송 시도 X, 중복 삭제 X
+  - Exactly once
+    - 1회만 전달, 메시지 중복 X, 상실 X
+    - 이산적으로 좋지만, 여러 개의 컴퓨터를 사용하는 분산환경에서는 여러 노드를 확인해야함
+    - 그렇기에 성능이 좋지 않음
+### Brokers
+- Kafka cluster는 여러 개의 broker(=server)로 구성
+- 각각의 broker는  id(interger)로 식별
+- 각각의 broker는 특정한 topic partition들을 가지고 있음
+- kafka client가 한 broker(=bootstrap broker)와만 연결되면, client는 전체 cluster내의 broker들과 연결될 수 있음
+- 일반적으로 broker는 3개로 시작, 100개 이상으로 늘어날 수 있음
+-  Ex)
+  - broker = 3, Topic-A = 3 Partition, Topic-B = 2 Partition
+  - 전체 cluster내의 3개의 server(broker)가 있음
+  - Topic-A에 해당하는 partition들이 각각 다른 broker로 들어감
+  - Topic-B에 해당하는 partition들은 2군데의 broker에 들어감
+  - 각각의 topic끼리는 독립적임
+- broker discovery
+  - 각각의 broker는 bootstrap server가 될 수 있음
+  - client는 한 broker와만 연결이 되면 전체 borker들과 연결이 가능
+  - 각각의 broker는  cluster내의 모든 broker, partition, topic에 대해 알고 있음
+### Replication
+- Topic에 할당되는 파라미터 같은 것
+- Topic들은 1 이상의 replication factor를 가져야함(factor 값이 N이란 건 Topic내 각 Partition을 N개의 broker에 복사)
+- 프로덕션 환경에서는 반드시 2 이상으로 세팅(다른 broker에 1개 이상의 복제본이 있어야함)
+- 만약 한 broker가 고장났더라도, 다른 broker까 데이터를 서빙할 수 있음
+- 복제된 Partition 중 하나는 Leader로 선출됨
+- 기본적으로 Producer는 Leader partition이 포함된 broker에 메시지를 전송
+- 그 후에 broker는 나머지 partition들에 메시지를 복제
+- Consumer도 Leader partition이 포함된 broker로부터 데이터를 읽음
+  > kafka 2.4부터 leader가 아닌, 가장 가까운 broker로부터 데이터를 읽는 것이 가능
+- Partition = 1 leader + (N-1) * ISR(In-sync Replicas)
+- Producer Acknowlegment(Acks)
+  - 처리가 잘되었다는 신호
+  - acks = 0 
+    - Producer는 메시지 송신 시 Ack를 기다리지 않고 다음 메시지를 송신
+    - 데이터 손실 가능성 존재
+  - acks = 1
+    - Leader Replica에 데이터가 전달되면  Ack를 반환
+    - 일반적으로 가장 많이 사용
+  - acks = all
+    - Leader + 모든 ISR들에 데이터가 복제되면 Ack를 반환
+    - 가장 안전(데이터 손실 없음 보장) 하나 성능 이슈 존재
+### Zookeeper, Kraft
+1. Zookeeper
+- Kafka broker들을 관리
+- Partition 들간의 leader 선출 과정에 관여
+- topic 추가 및 삭제, broker 추가 및 고장 등의 이벤트를 감지하고 Kafka에 전달
+- Zooker도 Leader-follower 형태의 분산노드
+2. Kraft
+- Zookeepre라는 별도의 Framework(외부 서비스)를 이용해 관리하기에 시스템의 복잡도 증가
+- Zookeeper는 cluster내 broker가 1000개 이상으로 많아질 때 성능상 병목이 될 수 있다고 함
+- Confluent에서 Zookeeper없이 Kafka를 사용할 수 있는 Kraft를 도입
+- zookeeper와 비교했을 때 성능이 좋다고 함
+- 아직 production 환경에서는 zookeeper를 대체하지는 못하는 것 같음
