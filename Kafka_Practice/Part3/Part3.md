@@ -40,3 +40,75 @@
   - Connect API를 통해 broker에 데이터를 전달
   - broker안 topic에 전달된 데이터는 Consumer(구독자)가 데이터를 읽어옴
   - cluster에 broker를 관리하는 Zookeeper가 있음
+
+## Kafka 기본 개념
+### Topic, Partitions, Offset
+1. Topic
+- kafka cluster 내의 어떤 특정 데이터 stream
+- Database의 table과 유산한 개념
+  - 차이점: table가 달리 어떤 제약조건 X, 데이터 검증을 따로 하지 않음
+- 각각의 topic은 이름으로 구별
+- json, avro, text, binary, protobuf 등 많은 메시지 포맷들을 지원
+- topic에 직접적으로 쿼리를 날리수 없음
+  - 대신 kafka producer를 사용해 데이터를 전송해야 함
+  - kafka consumer를 사용해 데이터를 읽어야함
+
+2. Partition
+- Topic에 대한 대량의 메시지 입출력을 지원하기 위해, 각각의 Topic은 Partition이라는 단위로 분할됨
+- 메시지가 한 번 partiton에 쓰이면, 변경도리 수 없음
+- 한 partition 내에서 데이터의 순서는 보장됨(다른 Partition 간에는 X)
+- 특정 메시지가 Topic 내 어느 Partition에 기록될지는 메시지 내의 Key 존재 여부에 따라 다름
+  - Key가 없는 경우 : Round robin(순차적으로 돌아감, 공평함)
+  - Key가 있는 경우 : Hash 기반(계산된 값에 따라 할당)
+- Partiton Offset
+
+3. Offset
+- 각각의 Partition에서 수신한 메시지에는 일련 번호가 부여되어 있음
+- Partition 단위로 메시지의 위치를 나타내는 Offset이라는 관리 정보를 이용해 Consumer가 어느 partiton가지 데이터를 읽었는지를 알 수 있게 함
+- 종류
+  - Log-End-Offset(LEO) : Partition 데이터의 끝
+  - Curent Offset : Consumer가 어디까지 메시지를 읽었는지
+  - Commit Offset : Consumer가 어디까지 커밋했는지
+    - Consumer로 부터 여기까지 offset을 처리했다느 offset commit 요청을 계기로 업데이트
+  - Commit이란
+    - DB : 트랜잭션의 내용 업데이트를 영구적으로 확정
+    - kafka : partition 내의 데이터를 처리하는 것
+### Producer, Message
+1. Producer
+- topic에 메시지를 전달하는 역할
+- Producer는 어느 Partition에 메시지를 전달해야 될지를 알고 있음(Partition: broker 내 저장)
+- broker에 메시지를 전달하는데 실패했을 때, Producer는 자동으로 복구작업을 수행
+- 메시지에 Key가 존재하는 경우
+  - Key의 해시 값을 이용해 파티셔닝 - 동일한 Key를 가진 메시지는 동일 Partition에 기록
+  - Partition간 데이터 편향이 발생할 수 있음
+- 메시지에 Key가 존재하지 않는 경우
+  - Round robin 방식 - 순서대로 파티션에 데이터를 집어넣음
+- Ex) Partition 간 데이터 편향 
+  - 특정 Producer에 전송하는 메시지의 Key종류 = A, B, C
+  - Topic의 Partiton은 5개인 경우
+  - Key가 있을 경우 Partition 2개는 항상 비어 있음
+  - 리소스 낭비, 불균형 발생
+2. Message format
+- 기본적으로  Key, value는 모두 binary type
+- 여러 타입을 byte형태로 직렬화(Serialization) 해야함
+  - Message Serializer 존재
+- 압축 포맷 지정 가능
+### Consumer, Deserialization
+1. Consumer
+- topic에 저장되어있는 데이터를 읽어오는 역할(pull model 기반)
+- Consumer는 어느 broker로부터 데이터를 읽어야 하는지 알고 있음
+- broker에 문제가 있어 데이터 읽기에 실패했을 때 어떻게 복구해야하는지 알고 있음
+- 각각의 Partition내에서 offset 기준으로 오름차순으로 데이터를 읽음
+- pull model
+  - Consumer가 데이터를 필요로 할 때 broker로부터 데이터를 읽음
+  - push model의 반대
+    - broker가 주체가 되어 Consumer에 데이터 전달
+  - Kafka는 Consumer 단계에서 Pull model을 사용
+  - Consumer가 고자이나 유지 보수로 정지했을 때, broker에 미치는 영향이 적다는 이점이 있음
+    - push model이었으면 broker에서 대응 필요
+  - Producer 단계에서는 push model 사용
+2. Consumer Deserializer
+- 데이터는 Partition 내에서 bytes 형태로 저장됨
+- Consumer는 bytes 형태의 데이터르 String, int 등의 Object 형태로 변환(Deserialization: 역직렬화)
+- Producer에서는 Serialization 방법과, Consumr에서의 Deserialization 방법은 반드시 같은 방식이어야함
+- 데이터 타입을 바꾸고 싶다면, Partition내의 데이터는 불변이므로 새로운 topic을 생성해야함
