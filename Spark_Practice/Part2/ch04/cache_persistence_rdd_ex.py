@@ -23,6 +23,5 @@ if __name__ == '__main__':
 
     # SparkUI를 보면 Stage의 Duration을 확인할 수 있음
     # count가 3번 일어남
-    # catche()를 추가하고 실행
+    # cache()를 추가하고 실행
     # 첫 번 째는 증가하지만, 두 번째, 세 번째 스테이지는 캐시가 되어 시간이 줄어듬
-    

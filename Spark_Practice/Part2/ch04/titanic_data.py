@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # where(), select()
 
     # Job2 의 Logical Plan
-    # repartition -> where -> select -> group by -? mean
+    # repartition -> where -> select -> group by -> mean
 
     # Logical plan 기준으로 Stage 구성
     # stage1 : repartition
@@ -45,12 +45,12 @@ if __name__ == '__main__':
     # Logical Plan 기준 Stage - Deep DIve
     # stage1 에서 1개의 partition을 가지고 있는 데이터가 5개의 partition으로 나뉘어짐
     # 나뉘어진 데이터는 Write Exchange라는 Buffer에 한 번 쓰여지게 됨
-    # Write Exchange가 다음 Stage의  input이 됨
+    # Write Exchange가 다음 Stage의 input이 됨
     # stage2 에서는 Write Exchange를 읽어 Read Exchange라는 버퍼에 둠
     # 이 부분에서 Executor간에 발생하는 Shuffle/Sort의 과정임
     # 파티션 개수에 해당하는 태스크가 만들어짐
     # 각각의 태스크 내에서 narrow trasformation이 병렬로 실행됨
-    # gropu by로 Write Exchange 버퍼로 쓰여지고 다음 stage의 Read Exchange에  input이 됨
+    # gropu by로 Write Exchange 버퍼로 쓰여지고 다음 stage의 Read Exchange에 input이 됨
     # 그 과정에서 Shuffle/Sort가 됨
     # Read Exchange에서 데이터를 읽어오면 또 다른 transformation연산을 실행하게 됨
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # task가 slot의 개수보다 크다면 slot수 만큼 우선 처리 후 남은 task는 slot이 비는 것을 기다렸다가 slot이 비면 할당됨
 
     # Action - collect
-    # collect() action 수행시,  executor 의 각 task는  Driver로 데이터를 전송
-    # 모든  task가 성공했을 때 driver는 이 job이 성공했다고 여김
-    # 만약 특정 task가 실ㄹ패했다면, driver는 그 task를 재시도(그 task를 가른 executor에서 실행할 수도 있음)
-    # retry도 실패한다면, driver는  exception을 발생시키도 job은 실
+    # collect() action 수행시,  executor의 각 task는 Driver로 데이터를 전송
+    # 모든 task가 성공했을 때 driver는 이 job이 성공했다고 여김
+    # 만약 특정 task가 실패했다면, driver는 그 task를 재시도(그 task를 다른 executor에서 실행할 수도 있음)
+    # retry도 실패한다면, driver는 exception을 발생시키고 job은 실패

@@ -13,6 +13,7 @@
             - 320GB RAM
 - 런타임 아키텍처
     - worker node의 스펙이 Yarn RM이 할당한 스펙보다 크거나 같아야함
+      > Yarn RM(Yarn Resource Manager) : Yarn에서 클러스터 자원을 관리하고 작업을 스케줄링하는 중앙 관리 노드
     - Application Master(AM) container
         - AM container 내에는 main()이 존재
         - Pyspark에서는 Python wrapper는 Py4J라는 라이버러리로 JVM내의 Java wrapper를 호출
@@ -68,7 +69,8 @@
     - spark 잡의 로그를 쉽게 보고자 할 때 사용
 
 ## Spark - action, stage, shuffle, task, slot 확인 실습
-[원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/spark_jobs_ex.py)
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/spark_jobs_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch04/titanic_data.py)
 
 ## JOIN의 종류
 
@@ -106,10 +108,12 @@
     - 일반적으로 가장 효율 적인 Join은 BJH와 SMH 임
 
 ### Broadcast Hash Join (BHJ) 실습
-[원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/join_broadcast_hash_join_ex.py)
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/join_broadcast_hash_join_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch04/join_broad_cast_hash_join_ex.py)
 
 ### Sort Merge Join (SMH) 실습
-[원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/join_sort_merge_join_ex.py)
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/join_sort_merge_join_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch04/join_sort_merge_join_ex.py)
 
 ## 스파크에서의 메모리 할당
 - Driver 메모리 할당
@@ -122,12 +126,12 @@
       1. Heap Memory(spark.executor.memory)
       2. Overhead Memory(spark.executor.memoryOverhead)
         - Non-JVM 프로세스들이 처리되는 공간
-        - ex) 셔플 데이터 교
+        - ex) 셔플 데이터 교환
       3. Offheap Memory(spark.memory.offHeap.size)
       4. Pyspark Memory(spark.executor.pyspark.memory)
-        - Scala나 Java를 사용하는 경우 고려할 필요강 없음
+        - Scala나 Java를 사용하는 경우 고려할 필요가 없음
         - Pyspark를 사용할 때, 파라미터를 따로 지정하지 않으면 파이썬의 메모리를 얼마나 쓰는지 제한하지 않음
-        - 파이썬외의 다른 non-JVM 프로세스와 공유하는 오베헤드 메모리 공간을 초과하지 않도록 하는 것이 spark application의 역할
+        - 파이썬 외의 다른 non-JVM 프로세스와 공유하는 오베헤드 메모리 공간을 초과하지 않도록 하는 것이 spark application의 역할
     - Offheap, PysparkMemory가 양수 값으로 세팅이 된다면 Overhead 영역에 포함됨
   
 ## 스파크 메모리 관리
@@ -231,7 +235,7 @@
       - Shuffle이 발생하지 않음
     - Partitoner 정보가 None이 아닌 input RDD에서 transformation 수행시 partition 정보는 항상보존 되는 것은 아님
       - 예시로 java,scala에서 PariRDD의 mapTopar 연산이 있음
-      - mapToPari 연산을 한다는 것은 Key값 자체가 달라질 수 있는 가능성이 존재
+      - mapToPair 연산을 한다는 것은 Key값 자체가 달라질 수 있는 가능성이 존재
       - Key값이 하나라도 변한다면 spark의 partitoner가 보장했던 데이터 분포의 일관성을 깨뜨림
       - Pyspark에서는 map 함수도 비슷함
     - Dataframe은 RDD와 비슷하지만, 차이점은 존재
@@ -243,14 +247,14 @@
       - Partitioning을 어떻게 했는지의 따라 병렬 처리의 능률이 달라짐
       - 무조건 파티션을 늘리는게 좋은 것은 아님(small file problem)
   - 장애 회복
-    - 스파크에서 잡 실패는 partiton level로 관리
+    - 스파크에서 잡 실패는 partition level로 관리
     - row 1개 연산이 실패하면, 그 row가 포함된 전체 partition을 재연산해야함
       - partition 사이즈가 너무 크다면, 재연산의 오버헤드가 커질 수 있음
   - Data Shuffling
     - input과 output 데이터 상태는 Partitioning 과정 자체에 영향을 미침
     - output partition 수 보다 input partition 수기 매우 작을 때
       - Shuffle 연산을 시작하는 시점에 과부하가 발생
-      - input partition1개당 사이즈가 더 크기 때문
+      - input partition 1개당 사이즈가 더 크기 때문
     - output partition 수 보다 Input partition 수가 매우 클 때
       - Shuffle 완료 후에, 완료된 데이터를 가져오는 과정에서 부하 발생
       - output partition 1개당 사이즈가 더 크기 때문
@@ -262,7 +266,10 @@
     - partition 간의 데이터 사이즈 차이가 큰 경우
     - 병렬 처리 애플리케이션에서 data skew는 큰 성능 저하의 원인이 될 수 있음
       - 크기가 작은 partition들의 연산이 아무리 빨리 수행되었을더라도, skew된 partition에서의 연산이 끝나지 않으면 다음 stage로 넘어갈 수 없음
-    - file 형태로 데이터를 쓸 때도, File 간  skew 문제가 발생할 수 있음
+    - file 형태로 데이터를 쓸 때도, File 간 skew 문제가 발생할 수 있음
+### Partition 개수 확인 실습
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/check_partition_count_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch04/check_partiton_count_ex.py)
 
 ## Repartition, Calesce에 대한 이해
 - Repartition
@@ -276,40 +283,43 @@
       - 값들의 범위를 기반으로 하는 partitioning
       - partitioning의 범위를 정하기 위해, 데이터 샘플링 작업을 수행
       - 아웃풋이 항상 똑같지 않을 수 있음
-  - output partiton 개수
-    - 기본적으로 파라미터로 넘겨준numPartitons
-    - 만약 numPartitons를 넘기지 않았다면, spark.sql.shuffle.partitions 값을 사용
+  - output partition 개수
+    - 기본적으로 파라미터로 넘겨준 numPartitons
+    - 만약 numPartitions를 넘기지 않았다면, spark.sql.shuffle.partitions 값을 사용
       - default = 200
   - Repartition은 Shuffle을 동반하기 때문에 함부로 사용하면 안됨
     - 사용 전, 후 성능이 어떻게 변하는지 모니터링
     - 사용하면 좋은 경우
       - DataFrame reuse and repeated column filters
         - 이 때는 filter로 사용되는 column에 대해 DF를 repartition 해놓으면 좋음
-      - DataFrame/RDD의  partition이  skewd 되어 있을 때
+      - DataFrame/RDD의  partition이 skewd 되어 있을 때
         - size가 큰 일부 partition 떄문에 전체 stage를 처리하는 시간이 증가
-      - DataFrame/RDD의 partiton 개수가 너무 작을 때
+      - DataFrame/RDD의 partition 개수가 너무 작을 때
         - 각 partition 크기가 너무 크면 spark의 병렬성을 제대로 활용하지 못함
-    - Partiton의 개수를 줄이는 목적으로 사용하는 것은 일반적으로 좋지 않음
-      - 줄일 때는 Repartition이 아닌 Calesce를 사용하는 것이 좋음
+    - Partition의 개수를 줄이는 목적으로 사용하는 것은 일반적으로 좋지 않음
+      - 줄일 때는 Repartition이 아닌 Coalesce를 사용하는 것이 좋음
 - Coalesce
   - Narrow dependency transformation -> Shuffle 발생하지 않음
   - RDD
     - coalesce(numPartitons)
   - DataFrame
     - coalesce(numPartitons)
-  - Coalesce는 shuffle/sort가 발생하지 않기 때문에 partition isze를 줄이는데는 일반적으로 repartition보다 좋음
-  - lacla(같은  Executor)내의 partition들을 결합하기만 함
+  - Coalesce는 shuffle/sort가 발생하지 않기 때문에 partition size를 줄이는데는 일반적으로 repartition보다 좋음
+  - local(같은 Executor)내의 partition들을 결합하기만 함
   - Coalesce는 partition의 개수를 증가시키지 않음
   - Coalesce는 skewed partition을 생성할 수 있음
   - Narrow transformation이기 때문에, coalesce()가 속한  stage내에서, 병렬성을 안좋게 할 수 있음
   - coalesce를 하지 않았다면, where,sleect transformation이 repartiiton의  task를 수행했을 것임
+### Repartition, Coalesce 실습
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/repartition_coalesce_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch04/repartition_coalesce.py)
 
-## Caching, Persisitence에 대한 이해
+## Caching, Persistence에 대한 이해
 - 동일한 RDD나, Dataframe의 transformation 연산을 중복으로 하지 않기 위해 사용
   - transformation 연산이 lazy evaluation, 즉 action이 실행될 때 실제로 transformation 연산이 수행된다는 것을 인지해야함
-- cache()는 내줍적으로 Persistence를 호출
+- cache()는 내부적으로 Persistence를 호출
   - 메모리에만 데이터를 캐싱
-- persisit()는 다양한 StorageLevel에 데이터를 캐싱할 수 있음
+- persist()는 다양한 StorageLevel에 데이터를 캐싱할 수 있음
   - MEMORY_ONLY
   - DISK_ONLY(MEMORY_ONLY 대비 더 큰 사이즈의 데이터 캐싱 가능, 속도가 느림)
   - MEMORY_ONLY_2(캐싱을 두 번 함, 더 안전함)
@@ -325,4 +335,10 @@
   - 사용하면 안되는 경우
     - DataFrame이 메모리에 들어가기는 너무 큰 경우
     - 크기에 상관없이, 자주 쓰지 않는 dataFrame에 대해 비용이 크지 않은 transformation 수행
-  - 메모리에만 cahce()의 경우, 직렬화, 비직렬화 과정이 동반되기 때문에 주
+  - 메모리에만 cahce()의 경우 직렬화, 비직렬화 과정이 동반되기 때문에 주의
+### RDD 실습
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/cache_persistence_rdd_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch04/cache_persistence_rdd_ex.py)
+### SQL 실습
+- [원본](https://github.com/startFromBottom/fc-spark-streaming/blob/main/part02/ch04_advanced/cache_persistence_sql_ex.py)
+- [내가 정리한 코드](https://github.com/b00kkk/fc_spark_flink_kafka/blob/main/Spark_Practice/Part2/ch04/cache_persistence_sql_ex.py)
