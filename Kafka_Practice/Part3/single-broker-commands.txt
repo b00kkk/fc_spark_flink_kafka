@@ -83,3 +83,64 @@ $ kafka-console-consumer --bootstrap-server localhost:9092 --topic second_topic 
 
 // key, value, timestamp 출력
 $ kafka-console-consumer --bootstrap-server localhost:9092 --topic second_topic --formatter kafka.tools.DefaultMessageFormatter --property print.timestamp=true --property print.key=true --property print.value=true --property print.partition=true --from-beginning
+
+#############################
+### Consumer groups 실습 1 ###
+#############################
+
+
+// topic 생성 (partition 3개)
+
+$ docker-compose exec kafka kafka-topics --create --topic third_topic --bootstrap-server kafka:9092 --partitions 3 --replication-factor 1
+
+$ docker-compose exec kafka bash
+
+// consumer 1
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic third_topic --group my-first-application
+// 두 개의 CLI에 각각 입력
+
+// producer
+$ kafka-console-producer --bootstrap-server localhost:9092 --producer-property partitioner.class=org.apache.kafka.clients.producer.RoundRobinPartitioner --topic third_topic
+// producer에 데이터를 입력하면 Roundrobin으로 번갈아 가면서 들어감
+
+// consumer 2
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic third_topic --group my-first-application
+
+// consumer 3
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic third_topic --group my-first-application
+// 이 상황에서 CLI 하나 더 추가해 consumer 하나 추가
+// 그 상황부터 번갈아가면서 데이터 입력(이전 것과 상관이 없음)
+
+// consumer 4
+// partition 개수보다 consumer 개수가 더 많으면, 1개 이상의 conusmer는 데이터를 아예 못 받을 수도 있음.
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic third_topic --group my-first-application
+// 하나 더 추가하며 partition의 개수보다 많아지면 한 개의 consumer는 작동을 하지 않음(데이터가 안들어옴)
+
+// consumer 5 (other group)
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic third_topic --group my-second-application --from-beginning
+// 이전 데이터를 다 가져옴
+
+// 같은 명령어를 한 번 더 입력하면, 아무 것도 보이지 않음.
+// --from-beginning : consumer_offset 이 없을 때만 유효하게 동작함.
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic third_topic --group my-second-application --from-beginning
+
+
+#############################
+### Consumer groups 실습 2 ###
+#############################
+
+
+# consumer groups 리스트
+$ kafka-consumer-groups --bootstrap-server localhost:9092 --list
+
+# 특정 consumer-group 정보 확인
+$ kafka-consumer-groups --bootstrap-server localhost:9092 --describe --group my-second-application
+// offset은 partition단위로 메시지 위치를 나타내는 관리 정보
+// log-end-offset은 파티션 데이터의 끝(마지막 숫자)
+// current-offset은 consumer가 어디까지 데이터를 읽었는지
+// lag은 LEO와 currnet-offset의 차이를 말함
+// lag 값이 크다면
+
+# producer & consumer 재실행
+$ kafka-console-producer --bootstrap-server localhost:9092 --producer-property partitioner.class=org.apache.kafka.clients.producer.RoundRobinPartitioner --topic third_topic
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic third_topic --group my-second-application --from-beginning
