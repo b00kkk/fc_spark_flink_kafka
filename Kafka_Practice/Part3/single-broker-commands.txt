@@ -20,3 +20,66 @@ $ docker-compose exec kafka kafka-topics --describe --topic first_topic --bootst
 
 // topic 삭제
 $ docker-compose exec kafka kafka-topics --delete --topic first_topic --bootstrap-server kafka:9092
+
+
+########################
+### producer cli 실습 ###
+########################
+
+
+// topic 재생성
+$ docker-compose exec kafka kafka-topics --create --topic first_topic --bootstrap-server kafka:9092
+$ docker-compose exec kafka bash
+// producer에 접근하기 위해 kafka container에 들어가줘야함
+
+// producer 생성
+$ kafka-console-producer --topic first_topic --broker-list kafka:9092
+// Spark 혹은  Server 등이 될 수 있음
+// Ctrl + d 로 텍스트 입력 종료
+
+$ kafka-console-producer --topic first_topic --broker-list kafka:9092 --producer-property acks=all
+
+// 없는 topic에 producer 생성
+$ kafka-console-producer --topic new_topic --broker-list kafka:9092
+// 똑같이 텍스트 입력창이 만들어짐
+// Topic을 만들어버러지만 실무 환경에서는 정의된 Topic에 하는 것이 좋음
+
+// producer with keys
+$ kafka-console-producer --topic first_topic --broker-list kafka:9092 --property parse.key=true --property key.separator=:
+// key가 없었을 때는 Round robin으로 했지만, Key를 넣으면 hash를 이용
+
+example key:example value
+name:fastcampus
+// key,value로 입력해줌
+
+
+########################
+### consumer cli 실습 ###
+########################
+
+// 토픽 생성
+$ docker-compose exec kafka kafka-topics --bootstrap-server localhost:9092 --topic second_topic --create --partitions 3
+
+$ docker-compose exec kafka bash
+// consumer
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic second_topic
+// $ kafka-console-consumer --bootstrap-server localhost:9092 --topic second_topic --from-beginning
+// topic이 잘 들어와졌는지 확인가능 순서는 다를 수 있음
+
+// 다른 터미널 열기
+$ docker-compose exec kafka bash
+// producer 생성
+// RoundRobinPartitioner : 실무에선 사용 X, 동작 방식 확인용
+$ kafka-console-producer --bootstrap-server localhost:9092 --producer-property partitioner.class=org.apache.kafka.clients.producer.RoundRobinPartitioner --topic second_topic
+// producer에 string을 추가하면, consumer에서 잘 보이는 것을 확인.
+
+// consumer 종료 후 다시 띄우기
+
+
+// from beginning.
+// producer에서 전송한 순서대로 데이터가 보이지는 않음.
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic second_topic --from-beginning
+
+
+// key, value, timestamp 출력
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic second_topic --formatter kafka.tools.DefaultMessageFormatter --property print.timestamp=true --property print.key=true --property print.value=true --property print.partition=true --from-beginning
