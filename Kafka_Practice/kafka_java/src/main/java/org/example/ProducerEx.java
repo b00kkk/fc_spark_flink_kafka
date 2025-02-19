@@ -6,7 +6,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
 
-public class Main {
+public class ProducerEx {
     public static void main(String[] args) {
 
         // 1. property 세팅
@@ -20,7 +20,7 @@ public class Main {
         KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
 
         // 3. record를 producer에 전송
-        ProducerRecord<String, String> producerRecord = new ProducerRecord<>("demo_java", "fastcampus");
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>("demo_java", "SHUTDOWN");
         producer.send(producerRecord);
 
         // 4. producer 종료
