@@ -1,7 +1,9 @@
 import requests
 import json
 
-import proto.book_data_pb2 as pb2
+from confluent_kafka import Producer
+
+import fc_spark_kafka_ex.proto.book_data_pb2 as pb2
 
 class NaverException(Exception):
     pass
@@ -33,6 +35,33 @@ def get_original_data(query: str) -> dict:
 
 if __name__ == '__main__':
 
+    conf = {
+        'bootstrap.servers': 'localhost:29092',
+    }
+
+    producer = Producer(conf)
+    topic = "book"
+
     original_data = get_original_data(query="베스트셀러")
 
     print(original_data)
+
+    for item in original_data['items']:
+        book = pb2.Book()
+        # dictionary -> protobuf
+        book.title = item['title']
+        book.author = item['author']
+        book.publisher = item['publisher']
+        book.isbn = item['isbn']
+        book.price = int(item['discount'])
+        book.publication_date = item['pubdate']
+        book.source = 'naver'
+
+        print('----')
+        print(book)
+        print('----')
+
+        producer.produce(topic=topic, value=book.SerializeToString())
+
+        producer.flush()
+        print("전송 완료")
