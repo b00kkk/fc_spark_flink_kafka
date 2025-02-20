@@ -3,6 +3,8 @@ import json
 
 from confluent_kafka import Producer
 import fc_spark_kafka_ex.proto.book_data_pb2 as pb2
+from fc_spark_kafka_ex.keywords import book_keywords
+
 
 class KakaoException(Exception):
     pass
@@ -40,23 +42,25 @@ if __name__ == '__main__':
     producer = Producer(conf)
     topic = "book"
 
-    original_data = get_original_data(query="베스트셀러")
 
-    for item in original_data['documents']:
-        book = pb2.Book()
-        # dictionary -> protobuf
-        book.title = item['title']
-        book.author = ','.join(item['authors'])
-        book.publisher = item['publisher']
-        book.isbn = item['isbn']
-        book.price = item['price']
-        book.publication_date = item['datetime']
-        book.source = 'kakao'
 
-        print('----')
-        print(book)
-        print('----')
-        producer.produce(topic=topic, value=book.SerializeToString())
+    for keyword in book_keywords:
+        original_data = get_original_data(query=keyword)
+        for item in original_data['documents']:
+            book = pb2.Book()
+            # dictionary -> protobuf
+            book.title = item['title']
+            book.author = ','.join(item['authors'])
+            book.publisher = item['publisher']
+            book.isbn = item['isbn']
+            book.price = item['price']
+            book.publication_date = item['datetime']
+            book.source = 'kakao'
 
-        producer.flush()
-        print("전송 완료")
+            print('----')
+            print(book)
+            print('----')
+            producer.produce(topic=topic, value=book.SerializeToString())
+
+            producer.flush()
+            print("전송 완료")

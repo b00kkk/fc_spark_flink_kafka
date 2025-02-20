@@ -4,6 +4,8 @@ import json
 from confluent_kafka import Producer
 
 import fc_spark_kafka_ex.proto.book_data_pb2 as pb2
+from fc_spark_kafka_ex.keywords import book_keywords
+
 
 class NaverException(Exception):
     pass
@@ -42,26 +44,24 @@ if __name__ == '__main__':
     producer = Producer(conf)
     topic = "book"
 
-    original_data = get_original_data(query="베스트셀러")
+    for keyword in book_keywords:
+        original_data = get_original_data(query=keyword)
+        for item in original_data['items']:
+            book = pb2.Book()
+            # dictionary -> protobuf
+            book.title = item['title']
+            book.author = item['author']
+            book.publisher = item['publisher']
+            book.isbn = item['isbn']
+            book.price = int(item['discount'])
+            book.publication_date = item['pubdate']
+            book.source = 'naver'
 
-    print(original_data)
+            print('----')
+            print(book)
+            print('----')
 
-    for item in original_data['items']:
-        book = pb2.Book()
-        # dictionary -> protobuf
-        book.title = item['title']
-        book.author = item['author']
-        book.publisher = item['publisher']
-        book.isbn = item['isbn']
-        book.price = int(item['discount'])
-        book.publication_date = item['pubdate']
-        book.source = 'naver'
+            producer.produce(topic=topic, value=book.SerializeToString())
 
-        print('----')
-        print(book)
-        print('----')
-
-        producer.produce(topic=topic, value=book.SerializeToString())
-
-        producer.flush()
-        print("전송 완료")
+            producer.flush()
+            print("전송 완료")
